@@ -1,0 +1,39 @@
+﻿<Window x:Class="AlleFinder.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:AlleFinder"
+        mc:Ignorable="d"
+        Title="AlleFinder" Height="700" Width="800"
+        WindowStartupLocation="CenterScreen" Background="#FFFDFCF0">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="50*"></RowDefinition>
+            <RowDefinition Height="40*"></RowDefinition>
+            <RowDefinition Height="50*"></RowDefinition>
+            <RowDefinition Height="40*"></RowDefinition>
+            <RowDefinition Height="50*"></RowDefinition>
+            <RowDefinition Height="244*"></RowDefinition>
+            <RowDefinition Height="75*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Label x:Name="PhraseLabel" Grid.Row="0" FontSize="20" FontFamily="DejaVu Sans" FontStyle="Italic" HorizontalContentAlignment="Center" VerticalAlignment="Center"  VerticalContentAlignment="Center" HorizontalAlignment="Center" Height="40" Content="Fraza do obserwowania" Width="359"/>
+        <TextBox Name="PhraseTextBox" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" FontSize="22" FontFamily="Calibri" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"></TextBox>
+
+        <Label Name="CategoryLabel" Grid.Row="2" FontSize="20" FontFamily="DejaVu Sans" FontStyle="Italic" HorizontalContentAlignment="Center" VerticalAlignment="Center"  VerticalContentAlignment="Center" HorizontalAlignment="Center" Height="40" Width="338" Content="Kategoria"/>
+        <ComboBox Name="CategoryComboBox" Grid.Row="3" FontSize="20" FontFamily="DejaVu Sans" IsTextSearchEnabled="False" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" IsEditable="True" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></ComboBox>
+
+        <Label x:Name="Filtry" Grid.Row="4" FontSize="20" FontFamily="DejaVu Sans" FontStyle="Italic" HorizontalContentAlignment="Center" VerticalAlignment="Center"  VerticalContentAlignment="Center" HorizontalAlignment="Center" Height="40" Width="328" Content="Filtry"/>
+        <ScrollViewer Grid.Row="5">
+            <Grid Name="FiltersContainersGrid">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition></ColumnDefinition>
+                    <ColumnDefinition></ColumnDefinition>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0"></StackPanel>
+                <StackPanel Grid.Column="1"></StackPanel>
+            </Grid>
+        </ScrollViewer>
+        <Button x:Name="SearchButton" Grid.Row="6" FontSize="28" Click="RedirectToWebsite" Content="Szukaj" Background="#FFEEBB4F" FontFamily="Gisha"/>
+    </Grid>
+</Window>
