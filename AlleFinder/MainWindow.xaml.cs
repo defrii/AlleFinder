@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Web;
 using System.Windows;
 using System.Windows.Controls;
@@ -22,6 +25,13 @@ namespace AlleFinder
         private readonly AlleFinderServiceHandler _serviceHandler = new AlleFinderServiceHandler();
         private readonly List<FilterOptionsType> _filters = new List<FilterOptionsType>();
         private CatInfoType _currentCategory;
+        private bool _categorySelected;
+
+        private Task<CatInfoType[]> _categoriesListNamesTask;
+        private CancellationTokenSource _categoriesListNamesCts = new CancellationTokenSource();
+
+        private Task<string[]> _categoriesListPathsTask;
+        private CancellationTokenSource _categoriesListPathsCts = new CancellationTokenSource();
 
         public MainWindow()
         {
@@ -39,6 +49,7 @@ namespace AlleFinder
         private void OnCategorySelected(object sender, SelectionChangedEventArgs selectionChangedEventArgs)
         {
             if (CategoryComboBox.SelectedItem == null) return;
+            _categorySelected = true;
 
             _currentCategory = DeepCopyOfCatInfoType((CatInfoType)CategoryComboBox.SelectedItem);
 
@@ -134,7 +145,6 @@ namespace AlleFinder
                                 {
                                     _filters.Add(inputFilter);
                                     valueLabel.FontWeight = FontWeights.DemiBold;
-                                    Debug.WriteLine(inputFilter.filterId);
                                 }
                                 else
                                 {
@@ -165,12 +175,47 @@ namespace AlleFinder
             }
         }
 
-        private void ConfigureSuggestionsList()
+        private async void ConfigureSuggestionsList()
         {
-            if (IsTextLongerThan(3) && IsTextLengthIncreased())
+            if (IsTextLongerThan(3) && IsTextLengthIncreased() && !_categorySelected)
             {
-                CatInfoType[] categoriesListNames = _serviceHandler.GetCategoriesListByPhrase(_categoryTextBox.Text);
-                string[] categoriesListPaths = _serviceHandler.GetCategoriesListPathsByPhrase(_categoryTextBox.Text);
+                string categoryTextBoxText = _categoryTextBox.Text;
+                CatInfoType[] categoriesListNames;
+                string[] categoriesListPaths;
+
+                if (_categoriesListNamesTask != null && !_categoriesListNamesTask.IsCompleted)
+                {
+                    _categoriesListNamesCts.Cancel();
+                    _categoriesListNamesCts = new CancellationTokenSource();
+                }
+
+                if (_categoriesListPathsTask != null && !_categoriesListPathsTask.IsCompleted)
+                {
+                    _categoriesListPathsCts.Cancel();
+                    _categoriesListPathsCts = new CancellationTokenSource();
+                }
+
+                try
+                {
+                    _categoriesListNamesTask = _serviceHandler.GetCategoriesListByPhraseAsync(categoryTextBoxText,
+                        _categoriesListNamesCts.Token);
+                    categoriesListNames = await _categoriesListNamesTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
+
+                try
+                {
+                    _categoriesListPathsTask = _serviceHandler.GetCategoriesListPathsByPhraseAsync(
+                        categoryTextBoxText, _categoriesListPathsCts.Token);
+                    categoriesListPaths = await _categoriesListPathsTask;
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
 
                 for (int i = 0; i < categoriesListNames.Length; ++i)
                     categoriesListNames[i].catName = categoriesListPaths[i];
@@ -190,6 +235,7 @@ namespace AlleFinder
                 CategoryComboBox.IsDropDownOpen = false;
             }
             _lastCategoryTest = _categoryTextBox.Text;
+            _categorySelected = false;
         }
 
         private bool IsTextLongerThan(int length) =>

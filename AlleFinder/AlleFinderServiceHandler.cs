@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using AlleFinder.AlleFinderServiceReference;
 using AlleFinder.AllegroServiceReference;
 using Newtonsoft.Json;
@@ -16,40 +16,49 @@ namespace AlleFinder
             return JsonConvert.DeserializeObject<CatInfoType[]>(categoriesListJson);
         }
 
+        public async Task<CatInfoType[]> GetCategoriesListByPhraseAsync(string phrase)
+        {
+            string categoriesListJson = await _client.GetCategoriesListByPhraseJsonAsync(phrase);
+            return JsonConvert.DeserializeObject<CatInfoType[]>(categoriesListJson);
+        }
+
+        public async Task<CatInfoType[]> GetCategoriesListByPhraseAsync(string phrase, CancellationToken cancellationToken)
+        {
+            string categoriesListJson = await _client.GetCategoriesListByPhraseJsonAsync(phrase);
+            cancellationToken.ThrowIfCancellationRequested();
+            return JsonConvert.DeserializeObject<CatInfoType[]>(categoriesListJson);
+        }
+
         public FiltersListType[] GetFiltersListByCategoryIdJson(string categoryId)
         {
             string filtersListType = _client.GetFiltersListByCategoryIdJson(categoryId);
             return JsonConvert.DeserializeObject<FiltersListType[]>(filtersListType);
         }
 
+        public async Task<FiltersListType[]> GetFiltersListByCategoryIdJsonAsync(string categoryId)
+        {
+            string filtersListType = await _client.GetFiltersListByCategoryIdJsonAsync(categoryId);
+            return JsonConvert.DeserializeObject<FiltersListType[]>(filtersListType);
+        }
+
+        public async Task<FiltersListType[]> GetFiltersListByCategoryIdJsonAsync(string categoryId, CancellationToken cancellationToken)
+        {
+            string filtersListType = await _client.GetFiltersListByCategoryIdJsonAsync(categoryId);
+            cancellationToken.ThrowIfCancellationRequested();
+            return JsonConvert.DeserializeObject<FiltersListType[]>(filtersListType);
+        }
+
         public string[] GetCategoriesListPathsByPhrase(string phrase)
             => _client.GetCategoriesListPathsByPhrase(phrase);
 
-        public ItemsListType SetItemOnTop(string filtersJson)
-        {
-            string itemJson = _client.GetItemsListJson(filtersJson, 1, 0);
-            return itemJson != "null" ? JsonConvert.DeserializeObject<ItemsListType[]>(itemJson)[0] : null;
-        }
+        public async Task<string[]> GetCategoriesListPathsByPhraseAsync(string phrase)
+            => await _client.GetCategoriesListPathsByPhraseAsync(phrase);
 
-        public int CountNewerItemsThanSelected(string filtersJson, ItemsListType itemOnTop)
+        public async Task<string[]> GetCategoriesListPathsByPhraseAsync(string phrase, CancellationToken cancellationToken)
         {
-            int count = 0;
-            const int size = 50;
-            for (int offset = 0; ; ++offset)
-            {
-                string itemsListJson = _client.GetItemsListJson(filtersJson, size, offset);
-                if (itemsListJson == "null")
-                    break;
-                List<ItemsListType> itemsList = JsonConvert.DeserializeObject<ItemsListType[]>(itemsListJson).ToList();
-                var foundItem = itemsList.FirstOrDefault(n => n.itemId == itemOnTop.itemId);
-                if (foundItem != null)
-                {
-                    count += itemsList.IndexOf(foundItem);
-                    break;
-                }
-                count += size;
-            }
-            return count;
+            string[] paths = await _client.GetCategoriesListPathsByPhraseAsync(phrase);
+            cancellationToken.ThrowIfCancellationRequested();
+            return paths;
         }
     }
 }
